@@ -19,14 +19,6 @@ export function GameProvider({ children }) {
   const stateRef = useRef(state); stateRef.current = state;
   const lastSave = useRef({ at: -Infinity, signature: '' });
   const metaRef = useRef(meta); metaRef.current = meta;
-  const [reducedHorror, setReducedHorror] = useState(() => {
-    try { return localStorage.getItem('lying:reduced-horror') === 'on' || matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return true; }
-  });
-  useEffect(() => {
-    const media = matchMedia('(prefers-reduced-motion: reduce)');
-    const change = () => { if (media.matches) setReducedHorror(true); };
-    media.addEventListener('change', change); return () => media.removeEventListener('change', change);
-  }, []);
   const [effects, setEffects] = useState(() => {
     try { return localStorage.getItem('lying:effects') !== 'off' && !matchMedia('(prefers-reduced-motion: reduce)').matches; }
     catch { return false; }
@@ -80,8 +72,7 @@ export function GameProvider({ children }) {
     try { localStorage.setItem('lying:effects', value ? 'off' : 'on'); } catch { /* Preferences are optional. */ }
     return !value;
   });
-  const toggleReducedHorror = () => setReducedHorror(value => { try { localStorage.setItem('lying:reduced-horror', value ? 'off' : 'on'); } catch { /* Optional preference. */ } return !value; });
   const horror = horrorView(state);
-  return <GameContext.Provider value={{ state, meta, dispatch, navigate, restart, effects, toggleEffects, horror, reducedHorror, toggleReducedHorror }}>{children}</GameContext.Provider>;
+  return <GameContext.Provider value={{ state, meta, dispatch, navigate, restart, effects, toggleEffects, horror }}>{children}</GameContext.Provider>;
 }
 export const useGame = () => useContext(GameContext);

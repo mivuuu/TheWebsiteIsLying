@@ -1,6 +1,5 @@
 const rows = [
 ['horror.senderMissing',':',':',':'],
-['horror.reduced','REDUCED HORROR EFFECTS','ОСЛАБИТЬ ЭФФЕКТЫ УЖАСА','הפחתת אפקטי אימה'],
 ['horror.typing','ADMIN IS TYPING…','ADMIN ПЕЧАТАЕТ…','ADMIN מקליד…'],
 ['horror.dont','don’t','не надо','אל'],
 ['horror.inputAvailable','INPUT STILL AVAILABLE.','ВВОД ПО-ПРЕЖНЕМУ ДОСТУПЕН.','הקלט עדיין זמין.'],

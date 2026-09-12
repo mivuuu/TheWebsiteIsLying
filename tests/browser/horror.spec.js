@@ -40,12 +40,15 @@ for (const lang of ['en','ru','he']) test(`wrong sender corrects without leaving
   await page.setViewportSize({ width: 375, height: 900 }); expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: `test-results/horror-sender-${lang}.png`, fullPage: true, animations: 'disabled' });
 });
-test('reduced horror is persisted presentation state and removes visual obstruction', async ({ page }) => {
-  const s = scene('cursor-loss', 'about', 10000, 1); await load(page, s);
-  const before = await snapshot(page); await page.locator('.horror-setting').click();
-  await expect(page.locator('.app')).toHaveClass(/horror-reduced/); expect(await snapshot(page)).toEqual(before);
-  expect(await page.locator('.page-content').evaluate(el => getComputedStyle(el).cursor)).not.toBe('none');
-  await page.reload(); await expect(page.locator('.app')).toHaveClass(/horror-reduced/);
+test('old reduced-horror preference cannot suppress anomalies', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('lying:reduced-horror', 'on'));
+  await load(page, scene('empty-page', 'files', 6000, 3));
+  await expect(page.locator('.horror-setting')).toHaveCount(0);
+  await expect(page.locator('.horror-blackout')).toBeVisible();
+  await page.reload();
+  await expect(page.locator('.horror-blackout')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.horror-blackout')).toHaveCount(0);
 });
 test('page-7 has quiet phases and finite recovery on the third visit', async ({ page }) => {
   const s = scene('none', 'page-7', 0); s.visits['page-7'] = 3; await load(page, s, 'he');

@@ -5,7 +5,6 @@ import { PAGES } from '../game/content.js';
 import { formatTime } from './Primitives.jsx';
 import { useLanguage } from '../translations/LanguageContext.jsx';
 import LanguageSwitcher from './LanguageSwitcher.jsx';
-import { HorrorSettings } from './HorrorLayer.jsx';
 import { ServiceLinks } from './StoryControls.jsx';
 function NameRequest() {
   const { dispatch } = useGame();
@@ -33,7 +32,7 @@ export default function Shell({ children }) {
     <header className="site-header">
       <button className="brand" aria-label={t('brand.logo')} onClick={() => dispatch({ type: 'LOGO' })}><span className="brand-mark" aria-hidden="true"><i /><i /></span><span className="multiline">{t('brand.lines')}<span className="accent">_</span></span></button>
       <div className="connection"><span className="status-dot" />{t('shell.connected')}</div>
-      <div className="header-controls"><HorrorSettings /><button className="effects-toggle" data-presentation-control aria-pressed={effects} onClick={toggleEffects}>{t('shell.effects')} <span>[ {t(effects ? 'shell.on' : 'shell.off')} ]</span></button><LanguageSwitcher /></div>
+      <div className="header-controls"><button className="effects-toggle" data-presentation-control aria-pressed={effects} onClick={toggleEffects}>{t('shell.effects')} <span>[ {t(effects ? 'shell.on' : 'shell.off')} ]</span></button><LanguageSwitcher /></div>
     </header>
     <div className="shell-body">
       <aside className="sidebar">

@@ -3,7 +3,6 @@ import { useGame } from '../game/GameContext.jsx';
 import { useLanguage } from '../translations/LanguageContext.jsx';
 import { graphemes } from '../translations/index.js';
 import LanguageSwitcher from './LanguageSwitcher.jsx';
-import { HorrorSettings } from './HorrorLayer.jsx';
 import { Action, RuleList } from './Primitives.jsx';
 export default function Intro() {
   const { dispatch, state } = useGame();
@@ -22,7 +21,7 @@ export default function Intro() {
   const complete = elapsed > 8700;
   return <div className={`intro ${visible ? 'intro-visible' : ''}`}>
     {!visible ? <div className="boot-cursor"><span className="cursor-block" /></div> : <>
-      <header className="intro-header"><span>{t('brand.full')}<span className="accent">_</span></span><div className="header-controls"><HorrorSettings /><span className="muted intro-trust">{t('intro.trust')}</span><LanguageSwitcher /></div></header>
+      <header className="intro-header"><span>{t('brand.full')}<span className="accent">_</span></span><div className="header-controls"><span className="muted intro-trust">{t('intro.trust')}</span><LanguageSwitcher /></div></header>
       <main className="intro-content">
         <div className="intro-kicker"><span className="tiny-square" />{t('intro.protocol')}</div>
         <h1 aria-label={t(welcomeKey)}><span aria-hidden="true">{welcome.slice(0, typed).join('')}</span><span className="cursor-block" aria-hidden="true" /></h1>

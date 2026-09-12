@@ -17,7 +17,7 @@ Production hosting needs an SPA fallback to `index.html` for all routes. No serv
 
 Use the directory and its service index. Additional addresses can be entered in the internal address field on Help and 404. Terminal commands are Latin; clues, output and conversations use the selected language. Arrow Up/Down recalls commands. Escape leaves page-7 for Files.
 
-EN / RU / HE changes presentation without changing progress, responses or timers. Hebrew uses document RTL and isolates paths, commands and mixed text. SIGNAL FX disables ambient animation; reduced-motion preferences are respected. HUM is optional, extremely quiet and off by default. REDUCED HORROR EFFECTS disables cursor loss, blackouts, distortion and rapid identity flashes without removing any puzzle or narrative text. Escape dismisses a transient blackout; it also leaves page-7 at any time.
+EN / RU / HE changes presentation without changing progress, responses or timers. Hebrew uses document RTL and isolates paths, commands and mixed text. SIGNAL FX disables ambient texture only; horror events remain active. HUM is optional, extremely quiet and off by default. Escape dismisses a transient blackout; it also leaves page-7 at any time.
 
 Refresh preserves the active run. START AGAIN resets the run with a new seed while retaining discovered endings and secrets. Time spent away does not advance narrative timers. The optional name field accepts an alias or refusal; the alias itself is not saved. All reactions concern actions inside this game. No permissions, sensors, external browsing history or personal information are requested.
 

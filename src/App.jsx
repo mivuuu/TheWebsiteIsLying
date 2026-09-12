@@ -14,7 +14,7 @@ const Debug = import.meta.env.DEV ? lazy(() => import('./components/DevPanel.jsx
 const debugRequested = import.meta.env.DEV && new URLSearchParams(location.search).has('debug');
 
 export default function App() {
-  const { state, dispatch, effects, horror, reducedHorror } = useGame();
+  const { state, dispatch, effects, horror } = useGame();
   const { t } = useLanguage();
   useEffect(() => {
     document.title = state.ending ? t('app.complete') : horror.title ? t(horror.title) : state.page === 'page-7' ? ' ' : t('app.title');
@@ -24,8 +24,8 @@ export default function App() {
     window.scrollTo({ top: 0 });
   }, [state.page, state.started, state.ending, state.flags.welcomeChanged]);
   const Screen = screens[state.page] || Home;
-  return <div className={`app ${effects ? 'effects-on' : 'effects-off'} ${reducedHorror ? 'horror-reduced' : ''} ${state.redUntil > state.now && !state.ending ? 'red-state' : ''} ${!reducedHorror && horror.id ? `anomaly-${horror.id}` : ''}`} onClick={event => { if (!event.target.closest('[data-presentation-control]') && state.started && !state.ending) dispatch({ type: 'CLICK' }); }}>
-    <div className="game-surface" inert={Boolean(horror.overlay && !reducedHorror && !state.ending)}>
+  return <div className={`app ${effects ? 'effects-on' : 'effects-off'}  ${state.redUntil > state.now && !state.ending ? 'red-state' : ''} ${horror.id ? `anomaly-${horror.id}` : ''}`} onClick={event => { if (!event.target.closest('[data-presentation-control]') && state.started && !state.ending) dispatch({ type: 'CLICK' }); }}>
+    <div className="game-surface" inert={Boolean(horror.overlay && !state.ending)}>
     <a className="skip-link" href="#main-content" hidden={!state.started || state.ending || state.page === 'page-7'}>{t('app.skip')}</a>
     {state.started && (state.ending || ['page-7', 'null'].includes(state.page)) && <LanguageSwitcher standalone />}
     {!state.started ? <Intro /> : state.ending ? <Ending /> : state.page === 'page-7' ? <HiddenPage /> : state.page === 'null' ? <NullPage /> : <Shell><Screen /></Shell>}
