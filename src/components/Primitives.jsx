@@ -1,5 +1,6 @@
 import { useGame } from '../game/GameContext.jsx';
 import { RULES } from '../game/content.js';
+import { routeUrl } from '../game/routes.js';
 import { renderedRules } from '../game/rules.js';
 import { useLanguage } from '../translations/LanguageContext.jsx';
 export function Action({ children, onClick, secondary = false, className = '', ...props }) {
@@ -7,7 +8,7 @@ export function Action({ children, onClick, secondary = false, className = '', .
 }
 export function RouteLink({ page, children, className = '' }) {
   const { navigate } = useGame();
-  return <a className={`route-link ${className}`} href={`/${page}`} onClick={e => { e.preventDefault(); navigate(page); }}>{children || <bdi dir="ltr">/{page}</bdi>}<span className="direction-arrow" aria-hidden="true"> ↗</span></a>;
+  return <a className={`route-link ${className}`} href={routeUrl(page)} onClick={e => { e.preventDefault(); navigate(page); }}>{children || <bdi dir="ltr">/{page}</bdi>}<span className="direction-arrow" aria-hidden="true"> ↗</span></a>;
 }
 export function RuleList({ count = 7, rules }) {
   const { t } = useLanguage();

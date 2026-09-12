@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useReducer, useRef, 
 import { gameReducer } from './engine.js';
 import { readMeta, restoreRun, serializeRun, updateMeta, freshSeed, RUN_KEY, META_KEY } from './persistence.js';
 import { horrorView } from './HorrorDirector.js';
+import { routeUrl, routeFromPath } from './routes.js';
 const GameContext = createContext(null);
 export function GameProvider({ children }) {
   const [meta, setMeta] = useState(readMeta);
@@ -10,7 +11,7 @@ export function GameProvider({ children }) {
     saved.horror.previousEndings = meta.discoveredEndings;
     // A reload restores the neutral registry presentation, not a stale visual double.
     if (['visitor-missing', 'users-count', 'duplicate-visitor'].includes(saved.horror.active?.id)) saved.horror.active = null;
-    const requested = location.pathname.slice(1);
+    const requested = routeFromPath(location.pathname);
     if (saved.started && requested && !requested.startsWith('tests/') && requested !== saved.page) return gameReducer(saved, { type: 'NAVIGATE', page: requested, now: saved.now });
     return saved;
   });
@@ -66,11 +67,11 @@ export function GameProvider({ children }) {
     });
   }, [state.ending, state.flags.discoveredRule8, state.secrets]);
   useEffect(() => {
-    const url = state.started ? `/${state.page}` : '/';
+    const url = routeUrl(state.started ? state.page : '');
     if (location.pathname !== url) history.pushState({}, '', url);
   }, [state.page, state.started]);
   useEffect(() => {
-    const onBack = () => navigate(location.pathname.slice(1) || 'home');
+    const onBack = () => navigate(routeFromPath(location.pathname) || 'home');
     const onVisibility = () => dispatch({ type: 'VISIBILITY', hidden: document.hidden });
     addEventListener('popstate', onBack); document.addEventListener('visibilitychange', onVisibility);
     return () => { removeEventListener('popstate', onBack); document.removeEventListener('visibilitychange', onVisibility); };

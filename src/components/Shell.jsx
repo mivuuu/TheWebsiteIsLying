@@ -1,3 +1,4 @@
+import { routeUrl } from '../game/routes.js';
 import { useState } from 'react';
 import { useGame } from '../game/GameContext.jsx';
 import { PAGES } from '../game/content.js';
@@ -37,9 +38,9 @@ export default function Shell({ children }) {
     <div className="shell-body">
       <aside className="sidebar">
         <div className="sidebar-label">{t('shell.directory')} <bdi>06</bdi></div>
-        <nav aria-label={t('shell.navLabel')}>{directory.map((page, i) => <a key={page} href={`/${page}`} title={`/${page}`} aria-current={state.page === page ? 'page' : undefined} className={`nav-item ${state.page === page ? 'active' : ''}`} onClick={e => { e.preventDefault(); navigate(page); }}>
+        <nav aria-label={t('shell.navLabel')}>{directory.map((page, i) => <a key={page} href={routeUrl(page)} title={`/${page}`} aria-current={state.page === page ? 'page' : undefined} className={`nav-item ${state.page === page ? 'active' : ''}`} onClick={e => { e.preventDefault(); navigate(page); }}>
           <bdi className="nav-index">{String(i + 1).padStart(2, '0')}</bdi><span className={horror.navLabels && ['home', 'exit'].includes(page) ? 'nav-unstable' : ''}><span className="nav-canonical">{t(`nav.${page}`)}</span>{horror.navLabels && ['home', 'exit'].includes(page) && <span className="nav-incorrect" aria-hidden="true">{t(`horror.nav.${page}`)}</span>}</span><span className="nav-end direction-arrow" aria-hidden="true">{state.page === page ? '←' : page === 'messages' && adminUnread ? '•' : page === 'exit' ? '↗' : ''}</span>
-        </a>)}{horror.duplicateArchive && <a className="nav-item" href="/archive" onClick={e => { e.preventDefault(); navigate('archive'); }}><bdi className="nav-index">03</bdi><span>{t('nav.archive')}</span></a>}</nav>
+        </a>)}{horror.duplicateArchive && <a className="nav-item" href={routeUrl('archive')} onClick={e => { e.preventDefault(); navigate('archive'); }}><bdi className="nav-index">03</bdi><span>{t('nav.archive')}</span></a>}</nav>
         <details className="service-directory" open={state.puzzles.audit}><summary>{t('story.services')}</summary><ServiceLinks pages={['status', 'logs', 'users', 'files', 'terminal', 'help'].filter(page => ['status', 'help'].includes(page) || state.unlocked.includes(page))} /></details>
         <div className="sidebar-note"><span className="sidebar-note-cross">+</span><p className="multiline">{t('shell.note')}</p><span className="faint">{t('shell.including')}</span></div>
         <div className="session-indicator"><span className="muted">{t('shell.session')}</span><span>{t(state.choices.registry ? 'shell.pending' : 'shell.progress')}<span className="cursor-line">_</span></span></div>
@@ -54,4 +55,5 @@ export default function Shell({ children }) {
     <footer className="site-footer"><span><bdi>{state.sessionId}</bdi> <span className="footer-slash">/</span> <bdi className="session-time">{formatTime(state.now - state.startedAt)}</bdi></span><span>{t('shell.inputs', { number: String(state.clicks).padStart(3, '0') })} <span className="footer-slash">/</span> <span className="accent">{t('shell.disconnect')}</span></span></footer>
   </div>;
 }
+
 
