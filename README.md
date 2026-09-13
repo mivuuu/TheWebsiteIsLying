@@ -37,6 +37,12 @@ The first-play target is 25–40 minutes: orientation, noticing a changed rule, 
 
 Run storage: `lying:run:v2`. Meta storage: `lying:meta:v1`. Language/effects use separate preference keys. Storage failures fall back to an in-memory game. The synthetic session seed determines rare events; 5%, 2% and 1% events are never required for an ending.
 
+Hidden maintenance is discovered from the small link at the bottom of `/help`. `/help/system`, `/help/endings` and `/help/reset` never appear in the normal directory. These presentation routes grant no visits, evidence or puzzle actions. While open, they defer narrative evaluation and hide interfering overlays; the director's saved state remains intact and normal evaluation resumes on departure.
+
+`src/game/endings.js` contains the ending registry and the idempotent `recordEnding` operation. Meta persistence records each completed session once, retains unique discoveries and first-discovery statistics, and keeps repeat runs in history. Existing discoveries without recorded dates remain undated. Session reset retains meta records. Full reset requires an exact localized confirmation and clears this game's `lying:` keys from local and session storage, including obsolete versions, while preserving unrelated keys. Language, SIGNAL FX and audio preferences remain unless the settings checkbox is checked. `src/game/storage.js` owns storage keys and cleanup. A fresh run and empty meta are saved immediately after full reset.
+
+The development inspector also exposes ending unlocks, run/meta clearing and registry/storage inspection. In development only, Ctrl+Shift+Backspace opens the reset page without deleting anything. Production has no debug controls or reset shortcut.
+
 Development-only `?debug` exposes an inspector for stage, trust, rules, puzzles, routes, fired events and eligible endings. It is opt-in and removed from the production bundle. Test state probes exist only in the test fixture.
 
 ## HorrorDirector

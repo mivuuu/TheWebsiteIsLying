@@ -17,7 +17,7 @@ export default function HorrorLayer() {
   const { state, horror, dispatch } = useGame(); const { t } = useLanguage();
   const blocking = horror.overlay && !state.ending;
   useEffect(() => {
-    if (!blocking) return null;
+    if (!blocking) return;
     const escape = e => { if (e.key === 'Escape') { e.preventDefault(); dispatch({ type: 'HORROR_DISMISS' }); } };
     addEventListener('keydown', escape); return () => removeEventListener('keydown', escape);
   }, [blocking, dispatch]);

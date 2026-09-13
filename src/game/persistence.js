@@ -1,16 +1,22 @@
 import { createInitialState, reconcileAuditSave } from './engine.js';
 import { migrateAuditEvidence } from './rules.js';
 import { initialHorror } from './HorrorDirector.js';
-export const RUN_KEY = 'lying:run:v2';
-export const META_KEY = 'lying:meta:v1';
-export const emptyMeta = () => ({ completedRuns: 0, discoveredEndings: [], discoveredRule8: false, discoveredSecrets: [], completedIds: [] });
+import { STORAGE_KEYS } from './storage.js';
+import { ENDING_REGISTRY, recordEnding } from './endings.js';
+export const RUN_KEY = STORAGE_KEYS.run;
+export const META_KEY = STORAGE_KEYS.meta;
+export const emptyMeta = () => ({ completedRuns: 0, discoveredEndings: [], discoveredRule8: false, discoveredSecrets: [], completedIds: [], endingRecords: {}, runHistory: [] });
 export function freshSeed() { return crypto.getRandomValues(new Uint32Array(1))[0]; }
 export function readMeta(storage) {
   try {
     storage ??= globalThis.localStorage;
     const m = JSON.parse(storage.getItem(META_KEY));
     if (!m || !Number.isInteger(m.completedRuns) || m.completedRuns < 0 || !['completedIds', 'discoveredEndings', 'discoveredSecrets'].every(key => Array.isArray(m[key]))) return emptyMeta();
-    return { ...emptyMeta(), ...m };
+    const endingRecords = Object.fromEntries(ENDING_REGISTRY.flatMap(({ id }) => {
+      const record = m.endingRecords?.[id];
+      return record && ['discoveredAt', 'runNumber', 'duration', 'pages'].every(key => Number.isFinite(record[key]) && record[key] >= 0) && Array.isArray(record.rules) ? [[id, record]] : [];
+    }));
+    return { ...emptyMeta(), ...m, discoveredEndings: [...new Set(m.discoveredEndings)].filter(id => ENDING_REGISTRY.some(e => e.id === id)), endingRecords, runHistory: Array.isArray(m.runHistory) ? m.runHistory : [] };
   } catch { return emptyMeta(); }
 }
 export function restoreRun(now, seed, previousRuns, storage) {
@@ -38,13 +44,11 @@ export function serializeRun(state) {
   return JSON.stringify({ ...run, name: '', notice: state.notice?.textKey === 'event.name' ? { ...state.notice, textKey: 'story.msg.answered', params: {} } : state.notice });
 }
 export function updateMeta(meta, state) {
-  const completed = state.ending && !meta.completedIds.includes(`${state.sessionId}:${state.sessionSeed}:${state.startedAt}`);
   const id = `${state.sessionId}:${state.sessionSeed}:${state.startedAt}`;
+  const recorded = state.ending ? recordEnding(meta, state.ending.id, { id, discoveredAt: state.ending.at, duration: state.ending.duration, rules: [...state.ending.rules], pages: state.ending.pages }) : meta;
   return {
-    completedRuns: meta.completedRuns + Number(Boolean(completed)),
-    discoveredEndings: [...new Set([...meta.discoveredEndings, ...(state.ending ? [state.ending.id] : [])])],
+    ...recorded,
     discoveredRule8: meta.discoveredRule8 || Boolean(state.flags.discoveredRule8),
     discoveredSecrets: [...new Set([...meta.discoveredSecrets, ...state.secrets])],
-    completedIds: completed ? [...meta.completedIds, id].slice(-100) : meta.completedIds,
   };
 }

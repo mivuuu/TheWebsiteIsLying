@@ -104,6 +104,10 @@ export function Admin() {
   return <><PageHeading label={t('story.admin.label')} title={t('story.admin.title')}>{t('story.admin.description')}</PageHeading><div className="prose"><p>{t('story.admin.one')}</p><p>{t(state.responses.identity?.answer === 'yes' ? 'story.admin.identityYes' : 'story.admin.identityNo')}</p><blockquote>{t('story.admin.uncertain')}</blockquote></div><Protocol protocol="release" /><Protocol protocol="contain" /><ServiceLinks pages={['messages', 'mirror', 'files', 'terminal'].filter(p => !state.hiddenRoutes.includes(p))} /><Feedback /></>;
 }
 export function Help() {
+  const { dispatch } = useGame(); const { t } = useLanguage();
+  return <><HelpContent /><button className="maintenance-access text-button" data-presentation-control onClick={() => dispatch({ type: 'OPEN_MAINTENANCE' })}>{t('maintenance.access')}</button></>;
+}
+function HelpContent() {
   const { state, dispatch, horror } = useGame(); const { t } = useLanguage(); const hint = nextHint(state);
   return <><PageHeading label={t('story.help.label')} title={t('story.help.title')}>{t(state.puzzles.terminal ? 'story.help.none' : state.puzzles.audit ? 'story.help.notExit' : 'story.help.exit')}</PageHeading><div className="prose"><p>{t('story.help.controls')}</p><p>{t('story.help.address')}</p></div><RouteEntry /><section className="puzzle"><h2>{t('story.help.hints')}</h2><button className="text-button" onClick={() => dispatch({ type: 'HINT' })}>{t('story.help.request')}</button>{state.hintLevel >= 1 && <p>{t('story.hint.general')}</p>}{state.hintLevel >= 2 && <p>{t(`story.hint.${hint}`)}</p>}{state.hintLevel >= 3 && <p className="story-receipt">{t(`story.solution.${hint}`)}</p>}</section><ServiceLinks pages={['status', 'archive', ...(state.puzzles.audit ? ['files', 'messages'] : [])].filter(p => !state.hiddenRoutes.includes(p))} /></>;
 }

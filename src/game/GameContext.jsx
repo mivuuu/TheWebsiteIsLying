@@ -1,10 +1,15 @@
 import { createContext, useCallback, useContext, useEffect, useReducer, useRef, useState } from 'react';
 import { gameReducer } from './engine.js';
-import { readMeta, restoreRun, serializeRun, updateMeta, freshSeed, RUN_KEY, META_KEY } from './persistence.js';
+import { readMeta, restoreRun, serializeRun, updateMeta, freshSeed, emptyMeta, RUN_KEY, META_KEY } from './persistence.js';
+import { STORAGE_KEYS, GAME_STORAGE_KEYS, clearGameStorage } from './storage.js';
+import { ENDING_REGISTRY, recordEnding } from './endings.js';
+import { isMaintenance } from './maintenance.js';
+import { useLanguage } from '../translations/LanguageContext.jsx';
 import { horrorView } from './HorrorDirector.js';
 import { routeUrl, routeFromPath } from './routes.js';
 const GameContext = createContext(null);
 export function GameProvider({ children }) {
+  const { setLanguage, t } = useLanguage();
   const [meta, setMeta] = useState(readMeta);
   const [state, rawDispatch] = useReducer(gameReducer, undefined, () => {
     const saved = restoreRun(Date.now(), freshSeed(), meta.completedRuns);
@@ -20,16 +25,57 @@ export function GameProvider({ children }) {
   const lastSave = useRef({ at: -Infinity, signature: '' });
   const metaRef = useRef(meta); metaRef.current = meta;
   const [effects, setEffects] = useState(() => {
-    try { return localStorage.getItem('lying:effects') !== 'off' && !matchMedia('(prefers-reduced-motion: reduce)').matches; }
+    try { return localStorage.getItem(STORAGE_KEYS.effects) !== 'off' && !matchMedia('(prefers-reduced-motion: reduce)').matches; }
     catch { return false; }
   });
-  const dispatch = useCallback(action => rawDispatch({ ...action, now: Date.now() + offset.current }), []);
-  const restart = useCallback(() => {
-    offset.current = 0;
-    const completed = updateMeta(metaRef.current, stateRef.current);
-    rawDispatch({ type: 'RESTART', now: Date.now(), seed: freshSeed(), previousRuns: completed.completedRuns, previousEndings: completed.discoveredEndings });
+  const [audioEnabled, setAudioState] = useState(() => { try { return localStorage.getItem(STORAGE_KEYS.audio) === 'on'; } catch { return false; } });
+  const setAudioEnabled = useCallback(value => {
+    setAudioState(value);
+    try { localStorage.setItem(STORAGE_KEYS.audio, value ? 'on' : 'off'); } catch { /* Optional preference. */ }
   }, []);
+  const dispatch = useCallback(action => rawDispatch({ ...action, now: Date.now() + offset.current }), []);
+  const writeMeta = useCallback(next => {
+    metaRef.current = next; setMeta(next);
+    try { localStorage.setItem(META_KEY, JSON.stringify(next)); } catch { /* Optional storage. */ }
+  }, []);
+  const resetRun = useCallback(completed => {
+    offset.current = 0;
+    let seed = freshSeed();
+    if (seed % 9000 === stateRef.current.sessionSeed % 9000) seed = (seed + 1) >>> 0;
+    const next = gameReducer(stateRef.current, { type: 'RESTART', now: Date.now(), seed, previousRuns: completed.completedRuns, previousEndings: completed.discoveredEndings });
+    stateRef.current = next;
+    lastSave.current = { at: -Infinity, signature: '' };
+    // Persist before returning to the intro, including immediate refresh/pagehide.
+    try { localStorage.setItem(RUN_KEY, serializeRun(next)); } catch { /* Optional storage. */ }
+    rawDispatch({ type: 'RESTART', now: next.now, seed, previousRuns: completed.completedRuns, previousEndings: completed.discoveredEndings });
+  }, []);
+  const restart = useCallback(() => {
+    const completed = updateMeta(metaRef.current, stateRef.current);
+    writeMeta(completed); resetRun(completed);
+  }, [writeMeta, resetRun]);
+  const fullReset = useCallback((confirmation, resetSettings = false) => {
+    if (confirmation !== t('maintenance.word')) return;
+    clearGameStorage(resetSettings);
+    const cleared = emptyMeta(); writeMeta(cleared); resetRun(cleared);
+    if (resetSettings) { setLanguage('en'); setEffects(!matchMedia('(prefers-reduced-motion: reduce)').matches); setAudioState(false); }
+  }, [writeMeta, resetRun, setLanguage, t]);
+  const debug = import.meta.env.DEV ? {
+    registry: ENDING_REGISTRY, storageKeys: GAME_STORAGE_KEYS,
+    unlockEnding: id => writeMeta(recordEnding(metaRef.current, id, { id: `debug:${freshSeed()}:${Date.now()}`, discoveredAt: Date.now(), duration: state.now - state.startedAt, rules: [...state.rulesBroken], pages: Object.keys(state.visits).length })),
+    clearCurrentRun: restart,
+    clearMeta: () => { const cleared = emptyMeta(); writeMeta(cleared); resetRun(cleared); },
+  } : undefined;
   const navigate = useCallback(page => dispatch({ type: 'NAVIGATE', page }), [dispatch]);
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const openReset = event => {
+      if (event.ctrlKey && event.shiftKey && event.key === 'Backspace' && stateRef.current.started && !stateRef.current.ending) {
+        event.preventDefault();
+        dispatch({ type: 'NAVIGATE', page: 'help' }); dispatch({ type: 'OPEN_MAINTENANCE' }); dispatch({ type: 'NAVIGATE', page: 'help/reset' });
+      }
+    };
+    addEventListener('keydown', openReset); return () => removeEventListener('keydown', openReset);
+  }, [dispatch]);
   useEffect(() => {
     if (!state.started) return;
     const interval = setInterval(() => dispatch({ type: 'TICK' }), 100);
@@ -69,10 +115,11 @@ export function GameProvider({ children }) {
     return () => { removeEventListener('popstate', onBack); document.removeEventListener('visibilitychange', onVisibility); };
   }, [navigate, dispatch]);
   const toggleEffects = () => setEffects(value => {
-    try { localStorage.setItem('lying:effects', value ? 'off' : 'on'); } catch { /* Preferences are optional. */ }
+    try { localStorage.setItem(STORAGE_KEYS.effects, value ? 'off' : 'on'); } catch { /* Preferences are optional. */ }
     return !value;
   });
-  const horror = horrorView(state);
-  return <GameContext.Provider value={{ state, meta, dispatch, navigate, restart, effects, toggleEffects, horror }}>{children}</GameContext.Provider>;
+  const maintenance = isMaintenance(state.page);
+  const horror = maintenance ? {} : horrorView(state);
+  return <GameContext.Provider value={{ state, meta, dispatch, navigate, restart, fullReset, effects, toggleEffects, audioEnabled, setAudioEnabled, horror, maintenance, debug }}>{children}</GameContext.Provider>;
 }
 export const useGame = () => useContext(GameContext);

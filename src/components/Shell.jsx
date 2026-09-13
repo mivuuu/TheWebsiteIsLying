@@ -22,7 +22,7 @@ function NameRequest() {
   </section>;
 }
 export default function Shell({ children }) {
-  const { state, dispatch, navigate, effects, toggleEffects, horror } = useGame();
+  const { state, dispatch, navigate, effects, toggleEffects, horror, maintenance } = useGame();
   const { t } = useLanguage();
   const red = state.redUntil > state.now;
   const pageNumber = PAGES.indexOf(state.page) + 1;
@@ -45,9 +45,9 @@ export default function Shell({ children }) {
         <div className="session-indicator"><span className="muted">{t('shell.session')}</span><span>{t(state.choices.registry ? 'shell.pending' : 'shell.progress')}<span className="cursor-line">_</span></span></div>
       </aside>
       <main className="main-panel" id="main-content">
-        <div className="page-location"><span>{t('shell.root')} <span className="path-separator">/</span> {t(`nav.${state.page}`).replace(/^\//, '').toUpperCase()}</span><span>{pageNumber > 0 ? t('shell.page', { number: String(pageNumber).padStart(2, '0') }) : t('story.unindexed')}</span></div>
+        <div className="page-location"><span>{t('shell.root')} <span className="path-separator">/</span> <bdi dir={maintenance ? 'ltr' : undefined}>{t(`nav.${state.page}`).replace(/^\//, '').toUpperCase()}</bdi></span><span>{pageNumber > 0 ? t('shell.page', { number: String(pageNumber).padStart(2, '0') }) : t('story.unindexed')}</span></div>
         <div className="page-content" key={state.page}>{children}</div>
-        {state.flags.nameAsked && !state.nameDecision && !state.exitAnswer && <NameRequest />}
+        {!maintenance && state.flags.nameAsked && !state.nameDecision && !state.exitAnswer && <NameRequest />}
         <div className="transmission" role="status" aria-live="polite"><span className="transmission-label">{t('sender.SYSTEM')}</span><span>{state.notice && state.notice.until > state.now ? t(state.notice.textKey, state.notice.params) : t('shell.normal')}</span><span className="transmission-cursor" aria-hidden="true">_</span></div>
       </main>
     </div>

@@ -1,4 +1,6 @@
 import { EVENTS } from './events.js';
+import { isMaintenance } from './maintenance.js';
+import { ENDING_REGISTRY } from './endings.js';
 import { PAGES, RULES } from './content.js';
 import { newStory, PUBLIC_ROUTES, ROUTES, archiveAvailable, fileAvailable, commitEligible, endingEligibility, QUESTIONS } from './story.js';
 import { terminalResult } from './terminal.js';
@@ -73,7 +75,7 @@ export function evaluateEvents(state) {
   return s;
 }
 function finish(s, id) {
-  return { ...s, stage: 'complete', ending: { id, titleKey: `story.ending.${id}`, at: s.now, clicks: s.clicks, pages: Object.keys(s.visits).length, rules: [...s.rulesBroken], duration: s.now - s.startedAt } };
+  return { ...s, stage: 'complete', ending: { id, titleKey: ENDING_REGISTRY.find(ending => ending.id === id).titleKey, at: s.now, clicks: s.clicks, pages: Object.keys(s.visits).length, rules: [...s.rulesBroken], duration: s.now - s.startedAt } };
 }
 function coreReducer(state, action) {
   if (action.type === 'RESTART') return createInitialState(action.now, action.seed, action.previousRuns ?? state.previousRuns);
@@ -187,6 +189,12 @@ function coreReducer(state, action) {
   return evaluateEvents(s);
 }
 export function gameReducer(state, action) {
+  // Maintenance is a presentation route: it grants no visits, evidence or puzzle actions.
+  if (!state.ending && state.started) {
+    if (action.type === 'OPEN_MAINTENANCE' && state.page === 'help') return { ...state, page: 'help/system', flags: { ...state.flags, maintenanceDiscovered: true } };
+    if (action.type === 'NAVIGATE' && isMaintenance(action.page) && state.flags.maintenanceDiscovered) return { ...state, page: action.page };
+    if (isMaintenance(state.page) && !['NAVIGATE', 'RESTART'].includes(action.type)) return action.type === 'TICK' ? { ...state, now: action.now } : state;
+  }
   state = reconcileAuditSave(state);
   const expiredFalseEnding = horrorActive(state, 'false-ending') && (action.now ?? state.now) >= state.horror.active.until;
   let next = coreReducer(state, action);

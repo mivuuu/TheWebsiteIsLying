@@ -36,6 +36,14 @@ try {
   }
   await page.goto(origin + base + 'unknown-directory'); await page.locator('.route-entry').waitFor();
   assert.equal(new URL(page.url()).pathname, base + '404');
+  await page.locator('.service-directory summary').click();
+  await page.locator(`a[href="${base}help"]`).first().click(); await page.locator('.maintenance-access').click();
+  await page.locator(`.maintenance a[href="${base}help/endings"]`).click();
+  await page.reload(); await page.locator('.ending-records').waitFor();
+  assert.equal(new URL(page.url()).pathname, base + 'help/endings');
+  await page.keyboard.press('Control+Shift+Backspace');
+  assert.equal(new URL(page.url()).pathname, base + 'help/endings');
+  assert.equal(await page.locator('.debug-panel').count(), 0);
   assert.deepEqual(errors, []);
   console.log('Pages subdirectory, deep-link fallback, save/restore and EN/RU/HE: passed.');
 } finally { await browser.close(); await new Promise(done => server.close(done)); }

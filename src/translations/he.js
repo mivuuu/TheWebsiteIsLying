@@ -1,6 +1,8 @@
 import { horrorTranslations } from './horror.js';
+import { maintenanceTranslations } from './maintenance.js';
 import { story } from './story.js';
 export default {
+  ...maintenanceTranslations.he,
   ...horrorTranslations.he,
   ...story.he,
   "app.title": "האתר משקר",

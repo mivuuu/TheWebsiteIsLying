@@ -1,6 +1,7 @@
 import { RULES, PAGES } from './content.js';
+import { MAINTENANCE_ROUTES } from './maintenance.js';
 
-export const ROUTES = [...PAGES, 'status', 'users', 'logs', 'terminal', 'files', 'help', '404', 'admin', 'mirror', 'deleted', 'old-rules', 'null', 'real-exit', 'page-7'];
+export const ROUTES = [...PAGES, 'status', 'users', 'logs', 'terminal', 'files', 'help', '404', 'admin', 'mirror', 'deleted', 'old-rules', 'null', 'real-exit', 'page-7', ...MAINTENANCE_ROUTES];
 export const PUBLIC_ROUTES = [...PAGES, 'status', 'help', '404'];
 export const ARCHIVES = ['3.2', '2.7', '2.1', '1.4', '1.0'];
 export const FILES = ['rules.txt', 'session.log', 'notice.txt', 'admin.lock', 'readme.old', 'recovery.dat'];

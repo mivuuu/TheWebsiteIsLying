@@ -1,11 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLanguage } from '../translations/LanguageContext.jsx';
 import { useGame } from '../game/GameContext.jsx';
 export default function AmbientAudio() {
-  const { t } = useLanguage(); const { horror, state } = useGame();
-  const [enabled, setEnabled] = useState(false); const sound = useRef(null); const sounded = useRef(new Set());
+  const { t } = useLanguage(); const { horror, state, maintenance, audioEnabled: enabled, setAudioEnabled: setEnabled } = useGame();
+  const sound = useRef(null); const sounded = useRef(new Set());
   const silent = horror.silence || Boolean(state.ending) || state.page === 'page-7';
   useEffect(() => () => { sound.current?.context.close(); }, []);
+  useEffect(() => {
+    if (enabled && !sound.current) startSound();
+  }, [enabled]);
   useEffect(() => {
     if (!sound.current) return;
     const { context, gain } = sound.current;
@@ -22,8 +25,7 @@ export default function AmbientAudio() {
     pulse.connect(level); level.connect(context.destination); pulse.start(); pulse.stop(context.currentTime + .1);
     pulse.onended = () => { pulse.disconnect(); level.disconnect(); };
   }, [horror.id, enabled, silent]);
-  async function toggle() {
-    if (enabled) { setEnabled(false); return; }
+  async function startSound() {
     try {
       if (!sound.current) {
         const context = new AudioContext(); const gain = context.createGain(); gain.gain.value = 0; gain.connect(context.destination);
@@ -32,8 +34,15 @@ export default function AmbientAudio() {
         }
         sound.current = { context, gain };
       }
-      await sound.current.context.resume(); setEnabled(true);
-    } catch { setEnabled(false); }
+      await sound.current.context.resume();
+    } catch {
+      // Closing a session must not overwrite the retained audio preference.
+      if (sound.current?.context.state !== 'closed') setEnabled(false);
+    }
   }
-  return <button className="effects-toggle ambient-control" data-presentation-control aria-pressed={enabled} onClick={toggle}>{t(enabled ? 'story.audio.on' : 'story.audio.off')}</button>;
+  function toggle() {
+    if (enabled) { setEnabled(false); return; }
+    setEnabled(true); startSound();
+  }
+  return <button className="effects-toggle ambient-control" hidden={maintenance} data-presentation-control aria-pressed={enabled} onClick={toggle}>{t(enabled ? 'story.audio.on' : 'story.audio.off')}</button>;
 }

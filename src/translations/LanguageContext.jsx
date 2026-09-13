@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useLayoutEffect, useState } from 'react';
 import { LANGUAGES, translate } from './index.js';
 const LanguageContext = createContext(null);
-export const LANGUAGE_STORAGE_KEY = 'lying:language';
+import { STORAGE_KEYS } from '../game/storage.js';
+export const LANGUAGE_STORAGE_KEY = STORAGE_KEYS.language;
 export function LanguageProvider({ children }) {
   const [language, setLanguageState] = useState(() => {
     try { const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY); return LANGUAGES.includes(saved) ? saved : 'en'; }

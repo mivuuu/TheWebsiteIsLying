@@ -532,3 +532,24 @@ html[lang=he] .page-description, html[lang=he] .prose, html[lang=he] .message p,
   .hidden-page h1 { font-size: 19px; }
 }
 .message-list { max-height: min(500px, 60dvh); overflow-y: auto; overscroll-behavior: contain; padding-inline-end: 8px; scrollbar-color: #3b4239 #090b09; scrollbar-width: thin; }
+.maintenance-access { display: block; margin-block-start: 72px; min-height: 44px; color: #8a9086; font-size: 10px; }
+.maintenance { overflow-wrap: anywhere; padding-block-end: 48px; }
+.maintenance .puzzle { min-width: 0; }
+.maintenance-actions, .maintenance-links { display: flex; flex-wrap: wrap; gap: 16px; margin-block-start: 24px; }
+.maintenance :is(button, a, summary) { min-height: 44px; white-space: normal; }
+.maintenance .action { max-width: 100%; text-align: start; }
+.maintenance-links a { display: inline-flex; align-items: center; }
+.maintenance input:not([type=checkbox]) { display: block; box-sizing: border-box; width: 100%; min-height: 48px; margin-block: 16px 24px; font-size: 16px; scroll-margin-block: 100px; }
+.reset-settings { display: flex; align-items: center; gap: 12px; min-height: 48px; cursor: pointer; }
+.reset-settings input { width: 20px; height: 20px; flex: 0 0 20px; }
+.ending-records { list-style: none; padding: 0; margin-block: 32px; }
+.ending-records li { display: flex; align-items: baseline; gap: 20px; border-block-end: 1px solid #292e27; padding-block: 20px; }
+.ending-records li > div { min-width: 0; }
+.ending-records h2 { margin-block: 0 12px; font-size: 16px; }
+.ending-records summary { display: flex; align-items: center; cursor: pointer; text-decoration: underline; }
+.record-number { color: #8a9086; }
+@media (max-width: 430px) {
+  .maintenance .puzzle { padding: 16px; }
+  .maintenance-actions { flex-direction: column; }
+  .maintenance .action { width: 100%; justify-content: flex-start; padding: 14px; }
+}
